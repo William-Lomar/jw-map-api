@@ -2,16 +2,16 @@ import { Injectable } from "@nestjs/common";
 import { NUsuario, Usuario } from "./usuarios.entity";
 
 export abstract class UsuarioRepository {
-    abstract get(idUsuario: number): Promise<Usuario>
+    abstract get(idUsuario: string): Promise<Usuario>
     abstract save(usuario: Usuario): Promise<Usuario>
-    abstract delete(idUsuario: number): Promise<boolean>
+    abstract delete(idUsuario: string): Promise<boolean>
 }
 
 @Injectable()
 export class UsuarioRepositoryMemory implements UsuarioRepository {
     private usuarios: NUsuario.IPropsUsuario[] = [
         {
-            idUsuario: 1,
+            idUsuario: '1',
             nomeUsuario: 'William',
             login: 'william.lomar',
             senha: '123456',
@@ -19,7 +19,7 @@ export class UsuarioRepositoryMemory implements UsuarioRepository {
         }
     ];
 
-    async get(idUsuario: number): Promise<Usuario> {
+    async get(idUsuario: string): Promise<Usuario> {
         const userInfo = this.usuarios.find((usuario) => usuario.idUsuario == idUsuario);
         if (!userInfo) throw new Error(`Usuario ${idUsuario} não cadastrado!`);
 
@@ -39,7 +39,7 @@ export class UsuarioRepositoryMemory implements UsuarioRepository {
         return usuario;
     }
 
-    async delete(idUsuario: number): Promise<boolean> {
+    async delete(idUsuario: string): Promise<boolean> {
         const userIndex = this.usuarios.findIndex(usuario => usuario.idUsuario == idUsuario);
         if (userIndex == -1) throw new Error("Usuário não encontrado!");
         this.usuarios.splice(userIndex, 1);

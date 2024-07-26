@@ -6,18 +6,21 @@ export namespace NUsuario {
     }
 
     export interface IPropsUsuario {
-        idUsuario: number
+        idUsuario: string
         nomeUsuario: string
         login: string
         senha: string
         tipoUsuario: NUsuario.ITipoUsuario
     }
 
+    export type IPropsUsuarioEdit = Partial<Omit<NUsuario.IPropsUsuario, 'idUsuario'>>
+    export type IPropsUsuarioInsert = Omit<NUsuario.IPropsUsuario, 'idUsuario'>
+
     export type IUsuarioInfo = Omit<NUsuario.IPropsUsuario, 'login' | 'senha'>
 }
 
 export class Usuario {
-    private idUsuario: number
+    private idUsuario: string
     private nomeUsuario: string
     private login: string
     private senha: string
@@ -34,7 +37,7 @@ export class Usuario {
     /**
      * Regra: Não será permitido exportar login e senha de um usuario do sistema
      */
-    getJson(): NUsuario.IUsuarioInfo {
+    getInfo(): NUsuario.IUsuarioInfo {
         return {
             idUsuario: this.idUsuario,
             nomeUsuario: this.nomeUsuario,
@@ -42,6 +45,10 @@ export class Usuario {
         }
     }
 
+    /**
+     * Usando para recuperar todas as informações do usuário
+     * @returns 
+     */
     getProps(): NUsuario.IPropsUsuario {
         return {
             idUsuario: this.idUsuario,
@@ -50,5 +57,14 @@ export class Usuario {
             login: this.login,
             senha: this.senha
         }
+    }
+
+    setProps(props: NUsuario.IPropsUsuarioEdit) {
+        const { nomeUsuario, login, senha, tipoUsuario } = props;
+
+        if (nomeUsuario) this.nomeUsuario = nomeUsuario;
+        if (login) this.login = login;
+        if (senha) this.senha = senha;
+        if (tipoUsuario) this.tipoUsuario = tipoUsuario;
     }
 }

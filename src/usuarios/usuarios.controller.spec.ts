@@ -30,5 +30,27 @@ describe('UsuarioController', () => {
             const res = await usuarioController.getInfo('1');
             expect(res).toStrictEqual(infoExpected);
         });
+
+        it('Deve inserir/editar e deletar um usuário corretamente', async () => {
+            const newUser: Omit<NUsuario.IPropsUsuario, 'idUsuario'> = {
+                nomeUsuario: 'William 2',
+                tipoUsuario: NUsuario.ITipoUsuario.Admin,
+                login: 'teste',
+                senha: '123456'
+            }
+
+            const resInsert = await usuarioController.inserir(newUser);
+            expect(resInsert).toMatchObject({ nomeUsuario: 'William 2', tipoUsuario: NUsuario.ITipoUsuario.Admin });
+            expect(resInsert.idUsuario).toBeTruthy();
+
+            const newUserInfo = await usuarioController.getInfo(resInsert.idUsuario);
+
+            newUserInfo.nomeUsuario = 'William editado!';
+            const resEdit = await usuarioController.editar(newUserInfo, newUserInfo.idUsuario);
+            expect(resEdit).toMatchObject(newUserInfo);
+
+            const deleteSucess = await usuarioController.excluir(newUserInfo.idUsuario);
+            expect(deleteSucess).toBe(true);
+        });
     });
 });
