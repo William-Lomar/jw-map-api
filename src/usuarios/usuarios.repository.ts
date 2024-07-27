@@ -3,12 +3,14 @@ import { NUsuario, Usuario } from "./usuarios.entity";
 
 export abstract class UsuarioRepository {
     abstract get(idUsuario: string): Promise<Usuario>
+    abstract getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<Usuario[]>
     abstract save(usuario: Usuario): Promise<Usuario>
     abstract delete(idUsuario: string): Promise<boolean>
 }
 
 @Injectable()
 export class UsuarioRepositoryMemory implements UsuarioRepository {
+
     private usuarios: NUsuario.IPropsUsuario[] = [
         {
             idUsuario: '1',
@@ -24,6 +26,26 @@ export class UsuarioRepositoryMemory implements UsuarioRepository {
         if (!userInfo) throw new Error(`Usuario ${idUsuario} não cadastrado!`);
 
         return new Usuario(userInfo);
+    }
+
+    async getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<Usuario[]> {
+        let usuarios = this.usuarios;
+
+        if (filter) {
+            usuarios = usuarios.filter((usuario) => {
+                let encontrado = true;
+
+                if (filter.idUsuario) encontrado = encontrado && usuario.idUsuario == filter.idUsuario
+                if (filter.nomeUsuario) encontrado = encontrado && usuario.nomeUsuario == filter.nomeUsuario
+                if (filter.login) encontrado = encontrado && usuario.login == filter.login
+                if (filter.senha) encontrado = encontrado && usuario.senha == filter.senha
+                if (filter.tipoUsuario) encontrado = encontrado && usuario.tipoUsuario == filter.tipoUsuario
+
+                return encontrado;
+            })
+        }
+
+        return usuarios.map(u => new Usuario(u));
     }
 
     async save(usuario: Usuario): Promise<Usuario> {

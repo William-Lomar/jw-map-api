@@ -1,3 +1,5 @@
+import { getString } from "src/utils/getString"
+
 export namespace NUsuario {
     export enum ITipoUsuario {
         Admin = 'Admin',
@@ -13,6 +15,7 @@ export namespace NUsuario {
         tipoUsuario: NUsuario.ITipoUsuario
     }
 
+    export type IPropsUsuarioFilter = Partial<NUsuario.IPropsUsuario>;
     export type IPropsUsuarioEdit = Partial<Omit<NUsuario.IPropsUsuario, 'idUsuario'>>
     export type IPropsUsuarioInsert = Omit<NUsuario.IPropsUsuario, 'idUsuario'>
 
@@ -27,6 +30,15 @@ export class Usuario {
     private tipoUsuario: NUsuario.ITipoUsuario
 
     constructor({ idUsuario, nomeUsuario, login, senha, tipoUsuario }: NUsuario.IPropsUsuario) {
+        const erros = [];
+        if (!idUsuario) erros.push('idUsuario')
+        if (!nomeUsuario) erros.push('nomeUsuario')
+        if (!login) erros.push('login')
+        if (!senha) erros.push('senha')
+        if (!tipoUsuario) erros.push('tipoUsuario')
+
+        if (erros.length) throw new Error(`Propriedades ausentes para criar Usuario : ${getString(erros)}`);
+
         this.idUsuario = idUsuario;
         this.nomeUsuario = nomeUsuario;
         this.login = login;

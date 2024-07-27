@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { UsuarioService } from './usuarios.service';
 import { getString } from 'src/utils/getString';
 import { NUsuario } from './usuarios.entity';
@@ -17,6 +17,11 @@ export class UsuarioController {
         } catch (error) {
             throw new HttpException(`Erro ao consultar usuário: ${getString(error)}`, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Get()
+    async getAll(@Query() filter?: NUsuario.IPropsUsuarioFilter): Promise<NUsuario.IUsuarioInfo[]> {
+        return this.usuarioService.getAll(filter);
     }
 
     @Post()

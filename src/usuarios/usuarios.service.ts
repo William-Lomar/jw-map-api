@@ -18,13 +18,24 @@ export class UsuarioService {
         return usuario.getInfo();
     }
 
+    /**
+     * Retorna as informações de todos os usuários
+     * @param idUsuario 
+     */
+    async getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<NUsuario.IUsuarioInfo[]> {
+        const usuarios = await this.usuarioRepository.getAll(filter);
+        return usuarios.map(u => u.getInfo());
+    }
+
     async inserir(props: NUsuario.IPropsUsuarioInsert): Promise<Usuario> {
+        await this.validarLoginDuplicado(props.login);
         const usuario = new Usuario({ ...props, idUsuario: randomUUID() });
         await this.usuarioRepository.save(usuario);
         return usuario;
     }
 
     async editar(props: NUsuario.IPropsUsuarioEdit, idUsuario: string): Promise<Usuario> {
+        if (props.login) await this.validarLoginDuplicado(props.login);
         const usuario = await this.usuarioRepository.get(idUsuario);
         usuario.setProps(props);
         await this.usuarioRepository.save(usuario);
@@ -33,5 +44,10 @@ export class UsuarioService {
 
     async excluir(idUsuario: string): Promise<void> {
         await this.usuarioRepository.delete(idUsuario);
+    }
+
+    private async validarLoginDuplicado(login: string): Promise<void> {
+        const usuarios = await this.usuarioRepository.getAll({ login });
+        if (usuarios.length) throw new Error("Já existe um usuário com este login!");
     }
 }
