@@ -22,7 +22,7 @@ describe('UsuarioController', () => {
     describe('root', () => {
         it('Deve retornar as informações de usuário corretamente', async () => {
             const infoExpected = {
-                idUsuario: 1,
+                idUsuario: "1",
                 nomeUsuario: 'William',
                 tipoUsuario: NUsuario.ITipoUsuario.Admin
             }
@@ -46,7 +46,7 @@ describe('UsuarioController', () => {
             const newUserInfo = await usuarioController.getInfo(resInsert.idUsuario);
 
             newUserInfo.nomeUsuario = 'William editado!';
-            const resEdit = await usuarioController.editar(newUserInfo, newUserInfo.idUsuario);
+            const resEdit = await usuarioController.editar(newUserInfo);
             expect(resEdit).toMatchObject(newUserInfo);
 
             const deleteSucess = await usuarioController.excluir(newUserInfo.idUsuario);

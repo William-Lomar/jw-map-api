@@ -20,14 +20,14 @@ export class UsuarioController {
     }
 
     @Get()
-    async getAll(@Query() filter?: NUsuario.IPropsUsuarioFilter): Promise<NUsuario.IUsuarioInfo[]> {
-        return this.usuarioService.getAll(filter);
+    async getAll(@Query() filter?: NUsuario.UsuarioDTOFilter): Promise<NUsuario.IUsuarioInfo[]> {
+        return this.usuarioService.getAll(new NUsuario.UsuarioDTOFilter(filter));
     }
 
     @Post()
-    async inserir(@Body() props: NUsuario.IPropsUsuarioInsert): Promise<NUsuario.IUsuarioInfo> {
+    async inserir(@Body() insertDto: NUsuario.UsuarioDTOInsert): Promise<NUsuario.IUsuarioInfo> {
         try {
-            const newUser = await this.usuarioService.inserir(props);
+            const newUser = await this.usuarioService.inserir(new NUsuario.UsuarioDTOInsert(insertDto));
             return newUser.getInfo();
         } catch (error) {
             throw new HttpException(`Erro ao inserir usuário: ${getString(error)}`, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -35,9 +35,9 @@ export class UsuarioController {
     }
 
     @Put()
-    async editar(@Body('props') props: NUsuario.IPropsUsuarioEdit, @Body('idUsuario') idUsuario: string): Promise<NUsuario.IUsuarioInfo> {
+    async editar(@Body() dtoEdit: NUsuario.UsuarioDTOEdit): Promise<NUsuario.IUsuarioInfo> {
         try {
-            const user = await this.usuarioService.editar(props, idUsuario);
+            const user = await this.usuarioService.editar(new NUsuario.UsuarioDTOEdit(dtoEdit));
             return user.getInfo();
         } catch (error) {
             throw new HttpException(`Erro ao editar usuário: ${getString(error)}`, HttpStatus.INTERNAL_SERVER_ERROR);

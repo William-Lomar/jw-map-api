@@ -22,22 +22,22 @@ export class UsuarioService {
      * Retorna as informações de todos os usuários
      * @param idUsuario 
      */
-    async getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<NUsuario.IUsuarioInfo[]> {
+    async getAll(filter?: NUsuario.UsuarioDTOFilter): Promise<NUsuario.IUsuarioInfo[]> {
         const usuarios = await this.usuarioRepository.getAll(filter);
         return usuarios.map(u => u.getInfo());
     }
 
-    async inserir(props: NUsuario.IPropsUsuarioInsert): Promise<Usuario> {
-        await this.validarLoginDuplicado(props.login);
-        const usuario = new Usuario({ ...props, idUsuario: randomUUID() });
+    async inserir(dtoInsert: NUsuario.UsuarioDTOInsert): Promise<Usuario> {
+        await this.validarLoginDuplicado(dtoInsert.login);
+        const usuario = new Usuario({ ...dtoInsert, idUsuario: randomUUID() });
         await this.usuarioRepository.save(usuario);
         return usuario;
     }
 
-    async editar(props: NUsuario.IPropsUsuarioEdit, idUsuario: string): Promise<Usuario> {
-        if (props.login) await this.validarLoginDuplicado(props.login);
-        const usuario = await this.usuarioRepository.get(idUsuario);
-        usuario.setProps(props);
+    async editar(dtoEdit: NUsuario.UsuarioDTOEdit): Promise<Usuario> {
+        if (dtoEdit.login) await this.validarLoginDuplicado(dtoEdit.login);
+        const usuario = await this.usuarioRepository.get(dtoEdit.idUsuario);
+        usuario.setProps(dtoEdit);
         await this.usuarioRepository.save(usuario);
         return usuario;
     }

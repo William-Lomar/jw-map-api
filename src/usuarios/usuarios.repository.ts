@@ -3,7 +3,7 @@ import { NUsuario, Usuario } from "./usuarios.entity";
 
 export abstract class UsuarioRepository {
     abstract get(idUsuario: string): Promise<Usuario>
-    abstract getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<Usuario[]>
+    abstract getAll(filter?: NUsuario.UsuarioDTOFilter): Promise<Usuario[]>
     abstract save(usuario: Usuario): Promise<Usuario>
     abstract delete(idUsuario: string): Promise<boolean>
 }
@@ -28,7 +28,7 @@ export class UsuarioRepositoryMemory implements UsuarioRepository {
         return new Usuario(userInfo);
     }
 
-    async getAll(filter?: NUsuario.IPropsUsuarioFilter): Promise<Usuario[]> {
+    async getAll(filter?: NUsuario.UsuarioDTOFilter): Promise<Usuario[]> {
         let usuarios = this.usuarios;
 
         if (filter) {
@@ -49,13 +49,13 @@ export class UsuarioRepositoryMemory implements UsuarioRepository {
     }
 
     async save(usuario: Usuario): Promise<Usuario> {
-        const props = usuario.getProps();
-        const userIndex = this.usuarios.findIndex(usuario => usuario.idUsuario == props.idUsuario);
+        const dto = usuario.getDto();
+        const userIndex = this.usuarios.findIndex(usuario => usuario.idUsuario == dto.idUsuario);
 
         if (userIndex == -1) {
-            this.usuarios.push(props);
+            this.usuarios.push(dto);
         } else {
-            this.usuarios[userIndex] = props;
+            this.usuarios[userIndex] = dto;
         }
 
         return usuario;

@@ -1,3 +1,5 @@
+import { IsEnum, IsString, validateSync } from "@nestjs/class-validator"
+import { OmitType, PartialType } from "@nestjs/mapped-types"
 import { getString } from "src/utils/getString"
 
 export namespace NUsuario {
@@ -15,35 +17,83 @@ export namespace NUsuario {
         tipoUsuario: NUsuario.ITipoUsuario
     }
 
-    export type IPropsUsuarioFilter = Partial<NUsuario.IPropsUsuario>;
-    export type IPropsUsuarioEdit = Partial<Omit<NUsuario.IPropsUsuario, 'idUsuario'>>
-    export type IPropsUsuarioInsert = Omit<NUsuario.IPropsUsuario, 'idUsuario'>
-
     export type IUsuarioInfo = Omit<NUsuario.IPropsUsuario, 'login' | 'senha'>
+    export class UsuarioDTO {
+        @IsString()
+        idUsuario: string;
+        @IsString()
+        nomeUsuario: string;
+        @IsString()
+        login: string;
+        @IsString()
+        senha: string;
+        @IsEnum(NUsuario.ITipoUsuario)
+        tipoUsuario: NUsuario.ITipoUsuario;
+
+        //Add esses parses no constructor para "higienizar" o objeto passado, removendo propriedades que não deveriam estar ali, 
+        //possibilitando assim "limpar" o body de um request limpando propriedades que não deveriam estar ali
+        constructor(dto: UsuarioDTO) {
+            this.idUsuario = dto.idUsuario;
+            this.nomeUsuario = dto.nomeUsuario;
+            this.login = dto.login;
+            this.senha = dto.senha;
+            this.tipoUsuario = dto.tipoUsuario;
+        }
+    }
+
+    export class UsuarioDTOFilter extends PartialType(UsuarioDTO) {
+        constructor(dto: UsuarioDTOFilter) {
+            super();
+            if (!dto) return; //Quando a classe eh utilizada pelas rotinas do Nest não eh passado nenhum parametro no constructor
+
+            this.idUsuario = dto.idUsuario;
+            this.nomeUsuario = dto.nomeUsuario;
+            this.login = dto.login;
+            this.senha = dto.senha;
+            this.tipoUsuario = dto.tipoUsuario;
+        }
+    }
+    export class UsuarioDTOInsert extends OmitType(UsuarioDTO, ['idUsuario']) {
+        constructor(dto: UsuarioDTOInsert) {
+            super();
+            if (!dto) return; //Quando a classe eh utilizada pelas rotinas do Nest não eh passado nenhum parametro no constructor
+
+            this.nomeUsuario = dto.nomeUsuario;
+            this.login = dto.login;
+            this.senha = dto.senha;
+            this.tipoUsuario = dto.tipoUsuario;
+        }
+    }
+
+    export class UsuarioDTOEdit extends PartialType(UsuarioDTO) {
+        @IsString()
+        idUsuario: string;
+
+        constructor(dto: UsuarioDTOEdit) {
+            super();
+            if (!dto) return; //Quando a classe eh utilizada pelas rotinas do Nest não eh passado nenhum parametro no constructor
+
+            this.idUsuario = dto.idUsuario;
+            this.nomeUsuario = dto.nomeUsuario;
+            this.login = dto.login;
+            this.senha = dto.senha;
+            this.tipoUsuario = dto.tipoUsuario;
+        }
+    }
 }
 
+//Para o validadeSync funcionar deve ser passado a classe instanciada de UsuarioDTO, usada essa estrátegia pois pode ser possivel criar essa classe 
+//passando apenas um objeto de chave e valor
+
 export class Usuario {
-    private idUsuario: string
-    private nomeUsuario: string
-    private login: string
-    private senha: string
-    private tipoUsuario: NUsuario.ITipoUsuario
+    private dto: NUsuario.UsuarioDTO;
 
-    constructor({ idUsuario, nomeUsuario, login, senha, tipoUsuario }: NUsuario.IPropsUsuario) {
-        const erros = [];
-        if (!idUsuario) erros.push('idUsuario')
-        if (!nomeUsuario) erros.push('nomeUsuario')
-        if (!login) erros.push('login')
-        if (!senha) erros.push('senha')
-        if (!tipoUsuario) erros.push('tipoUsuario')
+    constructor(usuarioDto: NUsuario.UsuarioDTO) {
+        const dto = new NUsuario.UsuarioDTO(usuarioDto);
+        const erros = validateSync(dto);
+        if (erros.length) throw new Error(`Erro na validação para criar Usuario: ${getString(erros)}`);
 
-        if (erros.length) throw new Error(`Propriedades ausentes para criar Usuario : ${getString(erros)}`);
-
-        this.idUsuario = idUsuario;
-        this.nomeUsuario = nomeUsuario;
-        this.login = login;
-        this.senha = senha;
-        this.tipoUsuario = tipoUsuario;
+        this.dto = dto;
     }
 
     /**
@@ -51,9 +101,9 @@ export class Usuario {
      */
     getInfo(): NUsuario.IUsuarioInfo {
         return {
-            idUsuario: this.idUsuario,
-            nomeUsuario: this.nomeUsuario,
-            tipoUsuario: this.tipoUsuario
+            idUsuario: this.dto.idUsuario,
+            nomeUsuario: this.dto.nomeUsuario,
+            tipoUsuario: this.dto.tipoUsuario
         }
     }
 
@@ -61,22 +111,20 @@ export class Usuario {
      * Usando para recuperar todas as informações do usuário
      * @returns 
      */
-    getProps(): NUsuario.IPropsUsuario {
-        return {
-            idUsuario: this.idUsuario,
-            nomeUsuario: this.nomeUsuario,
-            tipoUsuario: this.tipoUsuario,
-            login: this.login,
-            senha: this.senha
-        }
+    getDto(): NUsuario.UsuarioDTO {
+        return this.dto;
     }
 
-    setProps(props: NUsuario.IPropsUsuarioEdit) {
+    setProps(props: NUsuario.UsuarioDTOEdit) {
+        const dto = new NUsuario.UsuarioDTOEdit(props);
+        const erros = validateSync(dto);
+        if (erros.length) throw new Error(`Erro ao setar novas propriedades do Usuario: ${erros}`);
+
         const { nomeUsuario, login, senha, tipoUsuario } = props;
 
-        if (nomeUsuario) this.nomeUsuario = nomeUsuario;
-        if (login) this.login = login;
-        if (senha) this.senha = senha;
-        if (tipoUsuario) this.tipoUsuario = tipoUsuario;
+        if (nomeUsuario) this.dto.nomeUsuario = nomeUsuario;
+        if (login) this.dto.login = login;
+        if (senha) this.dto.senha = senha;
+        if (tipoUsuario) this.dto.tipoUsuario = tipoUsuario;
     }
 }
